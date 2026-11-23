@@ -1,0 +1,28 @@
+# Dossiers et fichiers locaux Terraform
+**/.terraform/*
+.terraform.lock.hcl.bak
+
+# Fichiers d'état : JAMAIS dans Git
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+plan.txt
+
+# Variables réelles (peuvent contenir des valeurs sensibles)
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Logs et overrides
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# OS / éditeurs
+.DS_Store
+.idea/
+.vscode/
