@@ -21,7 +21,8 @@ Les identifiants expirent à chaque session (~4 h) : les recopier après chaque 
 Contraintes du lab :
 
 - la création de rôles IAM est interdite, d'où l'utilisation de `LabRole` / `LabInstanceProfile` (via data sources) dans les modules suivants ;
-- seules les régions autorisées par le lab sont utilisables.
+- seules les régions autorisées par le lab sont utilisables ;
+- une SCP refuse `s3:GetBucketObjectLockConfiguration`, que la ressource `aws_s3_bucket` appelle à chaque lecture, quelle que soit la version du provider : les buckets sont donc créés avec l'AWS CLI, puis lus par `data "aws_s3_bucket"` et configurés par les ressources `aws_s3_bucket_*` (versioning, chiffrement, policy…).
 
 ## Démarrage
 
@@ -29,6 +30,8 @@ Contraintes du lab :
 # 1. Bootstrap du backend (une seule fois)
 cd bootstrap
 cp terraform.tfvars.example terraform.tfvars
+# Learner Lab : créer d'abord le bucket avec l'AWS CLI (voir "Contraintes du lab")
+aws s3api create-bucket --bucket "cloud5-tfstate-$(aws sts get-caller-identity --query Account --output text)" --region us-east-1
 terraform init
 terraform apply
 terraform output state_bucket_name
@@ -52,7 +55,7 @@ terraform destroy
 - NAT Gateway désactivée en dev (`enable_nat_gateway = false`) : ~0,05 $/h évité (NAT 0,045 $/h + IP élastique 0,005 $/h), plus 0,045 $/Go de données traitées.
 - VPC Endpoint S3 (Gateway) gratuit : les dépôts dnf d'Amazon Linux 2023 sont hébergés sur S3, donc nginx s'installe sans NAT.
 - `terraform destroy` obligatoire avant **End Lab** : la NAT Gateway, l'ALB et RDS continuent d'être facturés après la fin de la session.
-- Le bucket d'état créé par `bootstrap/` (protégé par `prevent_destroy`) peut rester : son coût est négligeable.
+- Le bucket d'état (créé par l'AWS CLI, hors de l'état Terraform) n'est supprimé par aucun `terraform destroy` et peut rester : son coût est négligeable.
 
 ## Modules
 
