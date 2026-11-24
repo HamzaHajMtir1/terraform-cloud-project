@@ -1,7 +1,8 @@
 # Copier en terraform.tfvars (ignoré par Git). Aucun secret ici.
-aws_region         = "eu-west-3"
+aws_region         = "us-east-1"
 project_name       = "cloud5"
 environment        = "dev"
 owner              = "hamza"
 vpc_cidr           = "10.20.0.0/16"
+enable_nat_gateway = false
 single_nat_gateway = true

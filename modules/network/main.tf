@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 # Module network : VPC, subnets (public / app / db), Internet Gateway,
-# NAT Gateway(s) et tables de routage.
+# NAT Gateway(s), VPC Endpoint S3 (Gateway) et tables de routage.
 # -----------------------------------------------------------------------------
 
 locals {
@@ -141,6 +141,26 @@ resource "aws_route_table_association" "app" {
 
   subnet_id      = each.value.id
   route_table_id = aws_route_table.app[each.key].id
+}
+
+# --- VPC Endpoint S3 (Gateway) : accès privé et gratuit à S3 -----------------
+# Les dépôts dnf d'Amazon Linux 2023 sont hébergés sur Amazon S3 (buckets
+# "al2023-repos-<région>-*"). Ce Gateway Endpoint ajoute une route vers S3 dans
+# les tables de routage "app" : les instances privées installent donc nginx
+# (dnf install nginx) SANS NAT Gateway. Contrairement à la NAT (facturée à
+# l'heure + au Go traité), un Gateway Endpoint S3 est gratuit.
+
+data "aws_region" "current" {}
+
+resource "aws_vpc_endpoint" "s3" {
+  count = var.enable_s3_endpoint ? 1 : 0
+
+  vpc_id            = aws_vpc.this.id
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [for rt in aws_route_table.app : rt.id]
+
+  tags = { Name = "${var.name_prefix}-vpce-s3" }
 }
 
 # --- Routage db : aucune route vers Internet (isolé) -------------------------

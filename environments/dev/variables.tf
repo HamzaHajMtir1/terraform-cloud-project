@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "Région de déploiement."
   type        = string
-  default     = "eu-west-3"
+  default     = "us-east-1"
 }
 
 variable "project_name" {
@@ -48,6 +48,12 @@ variable "db_subnet_cidrs" {
   description = "CIDR des subnets privés base de données (un par AZ)."
   type        = list(string)
   default     = ["10.20.21.0/24", "10.20.22.0/24"]
+}
+
+variable "enable_nat_gateway" {
+  description = "NAT Gateway (payante, ~0,045 $/h). Désactivée en dev : l'endpoint S3 suffit pour installer nginx sur Amazon Linux 2023."
+  type        = bool
+  default     = false
 }
 
 variable "single_nat_gateway" {

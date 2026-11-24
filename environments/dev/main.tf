@@ -31,5 +31,7 @@ module "network" {
   public_subnet_cidrs = var.public_subnet_cidrs
   app_subnet_cidrs    = var.app_subnet_cidrs
   db_subnet_cidrs     = var.db_subnet_cidrs
+  enable_nat_gateway  = var.enable_nat_gateway
   single_nat_gateway  = var.single_nat_gateway
+  enable_s3_endpoint  = true # gratuit : dnf (Amazon Linux 2023) passe par S3, sans NAT
 }
