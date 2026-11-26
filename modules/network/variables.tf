@@ -60,6 +60,12 @@ variable "enable_nat_gateway" {
   default     = true
 }
 
+variable "enable_s3_endpoint" {
+  description = "Crée un VPC Gateway Endpoint S3 (gratuit). Permet aux instances privées d'installer des paquets Amazon Linux 2023 sans NAT."
+  type        = bool
+  default     = true
+}
+
 variable "single_nat_gateway" {
   description = "true = une seule NAT (économique, dev/test) ; false = une NAT par AZ (haute dispo, prod)."
   type        = bool

@@ -1,7 +1,4 @@
-# Copier en terraform.tfvars (ignoré par Git). Aucun secret ici.
-aws_region         = "eu-west-3"
-project_name       = "cloud5"
-environment        = "dev"
-owner              = "hamza"
-vpc_cidr           = "10.20.0.0/16"
-single_nat_gateway = true
+# Exemple de valeurs locales : copier en terraform.tfvars (ignoré par Git).
+# Les valeurs de l'environnement sont dans <env>.auto.tfvars (versionné).
+# Aucun secret ne doit figurer dans ces fichiers.
+owner = "hamza"

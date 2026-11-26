@@ -1,0 +1,4 @@
+# Exemple de valeurs locales : copier en terraform.tfvars (ignoré par Git).
+# Les valeurs de l'environnement sont dans <env>.auto.tfvars (versionné).
+# Aucun secret ne doit figurer dans ces fichiers.
+owner = "hamza"

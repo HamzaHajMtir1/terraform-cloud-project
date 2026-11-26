@@ -143,6 +143,23 @@ resource "aws_route_table_association" "app" {
   route_table_id = aws_route_table.app[each.key].id
 }
 
+# --- VPC Gateway Endpoint S3 (gratuit) ---------------------------------------
+# Les dépôts dnf d'Amazon Linux 2023 sont hébergés sur S3 : avec cet endpoint,
+# les instances privées installent nginx sans NAT Gateway ni accès Internet.
+
+data "aws_region" "current" {}
+
+resource "aws_vpc_endpoint" "s3" {
+  count = var.enable_s3_endpoint ? 1 : 0
+
+  vpc_id            = aws_vpc.this.id
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
+  vpc_endpoint_type = "Gateway"
+  route_table_ids   = [for rt in aws_route_table.app : rt.id]
+
+  tags = { Name = "${var.name_prefix}-vpce-s3" }
+}
+
 # --- Routage db : aucune route vers Internet (isolé) -------------------------
 
 resource "aws_route_table" "db" {
