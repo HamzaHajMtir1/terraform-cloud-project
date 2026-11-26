@@ -1,15 +1,9 @@
 # -----------------------------------------------------------------------------
-# Bootstrap : configure le bucket S3 qui stockera les états Terraform
-# (dev/test/prod). Cette configuration garde son propre état en LOCAL (c'est
-# normal : le backend distant n'existe pas encore). On ne la lance qu'une fois.
-#
-# AWS Academy Learner Lab : une SCP du lab refuse
-# s3:GetBucketObjectLockConfiguration. Or la ressource aws_s3_bucket appelle
-# cette API à chaque lecture (création, refresh, import) et aucune version du
-# provider AWS ne tolère ce refus. Le bucket est donc créé une fois avec l'AWS
-# CLI (voir README, "Démarrage"), puis seulement lu ici (data source) et
-# configuré par les ressources aws_s3_bucket_*, qui n'appellent jamais l'API
-# Object Lock.
+# Bootstrap du backend.
+# Contrainte Learner Lab : le SCP interdit s3:GetBucketObjectLockConfiguration,
+# lu par la ressource aws_s3_bucket. Le bucket est donc créé par
+# scripts/create-state-bucket.ps1, puis référencé ici par data source.
+# Sa configuration de sécurité reste entièrement gérée par Terraform.
 # -----------------------------------------------------------------------------
 
 provider "aws" {
@@ -28,12 +22,9 @@ provider "aws" {
 data "aws_caller_identity" "current" {}
 
 locals {
-  # L'ID du compte rend le nom de bucket unique au niveau mondial
   state_bucket_name = "${var.project_name}-tfstate-${data.aws_caller_identity.current.account_id}"
 }
 
-# Bucket existant, créé par l'AWS CLI. Ce data source n'appelle que HeadBucket
-# (et GetBucketWebsite, non bloquant) : rien qui soit refusé par le lab.
 data "aws_s3_bucket" "tfstate" {
   bucket = local.state_bucket_name
 }
@@ -43,12 +34,6 @@ resource "aws_s3_bucket_versioning" "tfstate" {
 
   versioning_configuration {
     status = "Enabled"
-  }
-
-  # Le bucket n'étant plus géré par Terraform, c'est ici qu'on empêche un
-  # "terraform destroy" accidentel du bootstrap (historique des états)
-  lifecycle {
-    prevent_destroy = true
   }
 }
 

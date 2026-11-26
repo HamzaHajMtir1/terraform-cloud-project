@@ -1,8 +1,8 @@
 # Un bloc backend ne peut pas utiliser de variables.
-# Remplacer "bucket" par la sortie state_bucket_name du dossier bootstrap/.
+# bucket = sortie state_bucket_name de bootstrap/
 terraform {
   backend "s3" {
-    bucket       = "REMPLACER-PAR-state_bucket_name"
+    bucket       = "cloud5-tfstate-820241894145"
     key          = "dev/terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true

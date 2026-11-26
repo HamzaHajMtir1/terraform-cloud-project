@@ -9,10 +9,11 @@
 tfplan
 plan.txt
 
-# Variables réelles (peuvent contenir des valeurs sensibles)
-*.tfvars
-*.tfvars.json
-!*.tfvars.example
+# Variables locales (valeurs personnelles ou sensibles)
+# Les fichiers <env>.auto.tfvars (dimensionnement, sans secret) SONT versionnés
+terraform.tfvars
+terraform.tfvars.json
+*.secret.tfvars
 
 # Logs et overrides
 crash.log

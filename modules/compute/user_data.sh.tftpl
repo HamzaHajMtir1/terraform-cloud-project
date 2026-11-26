@@ -1,0 +1,55 @@
+#!/bin/bash
+# Application de démonstration : page affichant l'instance qui répond.
+# Les instances n'ont pas d'accès Internet : nginx est installé depuis les
+# dépôts Amazon Linux 2023 (hébergés sur S3) via le VPC endpoint S3.
+
+TOKEN=$(curl -sX PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 300")
+md() { curl -s -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/$1"; }
+
+INSTANCE_ID=$(md instance-id)
+AZ=$(md placement/availability-zone)
+PRIVATE_IP=$(md local-ipv4)
+
+cat > /tmp/index.html <<HTML
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>Terraform Cloud Project</title>
+<style>
+ body{font-family:Arial,sans-serif;background:#f4f6f9;margin:0;padding:40px;color:#1f2d3d}
+ .card{max-width:560px;margin:auto;background:#fff;border-radius:10px;padding:30px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+ h1{color:#1f4e79;margin-top:0} td{padding:6px 12px} td:first-child{font-weight:bold}
+</style></head>
+<body><div class="card">
+<h1>Terraform Cloud Project</h1>
+<p>Projet <b>${project}</b> &middot; environnement <b>${environment}</b></p>
+<table>
+<tr><td>Host</td><td>$(hostname)</td></tr>
+<tr><td>Instance</td><td>$INSTANCE_ID</td></tr>
+<tr><td>Zone</td><td>$AZ</td></tr>
+<tr><td>IP privée</td><td>$PRIVATE_IP</td></tr>
+</table>
+</div></body></html>
+HTML
+
+if timeout 300 dnf install -y nginx; then
+  cp /tmp/index.html /usr/share/nginx/html/index.html
+  systemctl enable --now nginx
+else
+  # Repli : serveur HTTP Python fourni avec Amazon Linux 2023
+  mkdir -p /opt/web
+  cp /tmp/index.html /opt/web/index.html
+  cat > /etc/systemd/system/web.service <<'UNIT'
+[Unit]
+Description=Serveur web de secours
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 80 --directory /opt/web
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+  systemctl daemon-reload
+  systemctl enable --now web
+fi

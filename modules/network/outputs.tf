@@ -27,8 +27,3 @@ output "nat_gateway_ids" {
   description = "IDs des NAT Gateways créées."
   value       = [for az in local.nat_azs : aws_nat_gateway.this[az].id]
 }
-
-output "s3_endpoint_id" {
-  description = "ID du VPC Endpoint S3 (null si enable_s3_endpoint = false)."
-  value       = one(aws_vpc_endpoint.s3[*].id)
-}
